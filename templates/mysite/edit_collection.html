@@ -1,0 +1,192 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Edit Collection{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 {
+        color: #333;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        width: 80%;
+        max-width: 800px;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    form {
+        text-align: left;
+    }
+    label {
+        display: block;
+        margin: 15px 0 5px;
+        font-weight: bold;
+    }
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    textarea {
+        height: 100px;
+        resize: vertical;
+    }
+    .game-options {
+        margin: 20px 0;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .game-option {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+    .game-option input {
+        margin-right: 10px;
+    }
+    .private-option {
+        margin: 20px 0;
+    }
+    .btn {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 16px;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin: 5px;
+        transition: background 0.3s ease;
+    }
+    .submit-btn {
+        background-color: #28a745;
+    }
+    .submit-btn:hover {
+        background-color: #218838;
+    }
+    .cancel-btn {
+        background-color: #dc3545;
+    }
+    .cancel-btn:hover {
+        background-color: #c82333;
+    }
+    .game-card {
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #f9f9f9;
+        border-radius: 5px;
+        position: relative;
+    }
+    .game-card.removed {
+        background: #f8d7da;
+        opacity: 0.7;
+    }
+    .toggle-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Edit Collection</h1>
+    
+    <form method="post" action="{% url 'catalog:edit_collection' collection.id %}">
+        {% csrf_token %}
+        
+        <label for="name">Collection Name:</label>
+        <input type="text" id="name" name="name" value="{{ collection.name }}" required>
+        
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required>{{ collection.description }}</textarea>
+
+        <label>Current Games in This Collection</label>
+        <div id="current-games">
+        {% for game in collection.games.all %}
+            <div class="game-card" data-game-id="{{ game.id }}">
+                <p>{{ game.title }} – {{ game.platform }} – {{ game.genre }}</p>
+                <input type="checkbox" name="games" value="{{ game.id }}" checked hidden>
+                <button type="button" class="toggle-btn">Remove</button>
+            </div>
+        {% empty %}
+            <p><em>No games in this collection yet.</em></p>
+        {% endfor %}
+        </div>
+
+        <label>Select Games for Collection:</label>
+        <div class="game-options">
+            {% for game in games %}
+                {% if game not in collection.games.all %}
+                    <div class="game-option">
+                        <input type="checkbox" id="game_{{ game.id }}" name="games" value="{{ game.id }}" 
+                            data-in-private="{{ game.in_private|yesno:'1,0' }}" 
+                            data-in-any="{{ game.in_any|yesno:'1,0' }}"
+                            {% if not is_librarian and game.in_private %}disabled{% endif %}>
+                        <label for="game_{{ game.id }}">
+                            {{ game.title }} – {{ game.platform }} – {{ game.genre }}
+                            {% if game.in_private %}
+                                <small>(locked in private)</small>
+                            {% endif %}
+                            {% if is_librarian and game.in_any %}
+                                <small>(already in a collection)</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <p>No other games available to add.</p>
+            {% endfor %} 
+        </div>
+        
+        <button type="submit" class="btn submit-btn">Update Collection</button>
+        
+        {% if is_librarian %}
+            <a href="{% url 'catalog:librarian_dashboard' %}" class="btn cancel-btn">Cancel</a>
+        {% else %}
+            <a href="{% url 'catalog:patron_dashboard' %}" class="btn cancel-btn">Cancel</a>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const card = btn.closest('.game-card');
+            const checkbox = card.querySelector('input[type=checkbox]');
+            if (checkbox.checked) {
+                checkbox.checked = false;
+                card.classList.add('removed');
+                btn.textContent = 'Add back';
+            } else {
+                checkbox.checked = true;
+                card.classList.remove('removed');
+                btn.textContent = 'Remove';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

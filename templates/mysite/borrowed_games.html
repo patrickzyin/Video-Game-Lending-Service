@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrowed Games</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: white;
+            margin: 10px auto;
+            padding: 10px;
+            width: 60%;
+            border-radius: 5px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .return-btn {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 16px;
+            color: white;
+            background-color: #dc3545;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        .return-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h2>Your Borrowed Games</h2>
+    <ul>
+        {% for borrowed_game in borrowed_games %}
+            <li>
+                {{ borrowed_game.game.title }} - {{ borrowed_game.game.platform }} - {{ borrowed_game.game.genre }}
+                <a href="{% url 'catalog:return_game' borrowed_game.id %}" class="return-btn">Return this Game</a>
+            </li>
+        {% empty %}
+            <li>You have not borrowed any games.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'catalog:game_list' %}">Back to Available Games</a>
+</body>
+</html>

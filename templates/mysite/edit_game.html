@@ -1,0 +1,143 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Edit Game{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 {
+        color: #333;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    form {
+        text-align: left;
+    }
+    label {
+        display: block;
+        margin: 15px 0 5px;
+        font-weight: bold;
+    }
+    input[type="text"], textarea, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    .btn {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 16px;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin: 10px 5px 0 0;
+        transition: background 0.3s ease;
+    }
+    .submit-btn {
+        background-color: #28a745;
+    }
+    .submit-btn:hover {
+        background-color: #218838;
+    }
+    .cancel-btn {
+        background-color: #dc3545;
+    }
+    .cancel-btn:hover {
+        background-color: #c82333;
+    }
+    .availability {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+    }
+    .availability input {
+        width: auto;
+        margin-right: 10px;
+    }
+    .file-upload-btn {
+        background-color: #007bff;
+        cursor: pointer;
+        padding: 10px 20px;
+        display: inline-block;
+        color: white;
+        border-radius: 5px;
+        margin-top: 10px;
+        transition: background 0.3s ease;
+    }
+    .file-upload-btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Edit Game</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="title">Game Title:</label>
+        <input type="text" id="title" name="title" value="{{ game.title }}" required>
+
+        <label for="platform">Platform:</label>
+        <input type="text" id="platform" name="platform" value="{{ game.platform }}" required>
+
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" name="genre" value="{{ game.genre }}" required>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description">{{ game.description }}</textarea>
+
+        <label>
+            <input type="checkbox" name="available" {% if game.available %}checked{% endif %}>
+            Available for rent
+        </label>
+
+        {% if game.image %}
+        <p>Current Image:</p>
+        <img src="{{ game.image.url }}" alt="{{ game.title }}" style="max-width: 150px;">
+        <div style="margin-top: 10px;">
+            <input type="checkbox" name="remove_image" id="remove_image">
+            <label for="remove_image"><strong>Remove image</strong></label>
+        </div>
+        {% endif %}
+
+        <label for="image" class="file-upload-btn">Choose File</label>
+        <input type="file" id="image" name="image" style="display: none;">
+        <span id="file-name">No file chosen</span>
+
+        <div>
+            <button type="submit" class="btn submit-btn">Update Game</button>
+            <a href="{% url 'librarian' %}" class="btn cancel-btn">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('image')?.addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name || 'No file chosen';
+    document.getElementById('file-name').textContent = fileName;
+});
+</script>
+{% endblock %}

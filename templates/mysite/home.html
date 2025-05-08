@@ -1,0 +1,74 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Video Game Lending Website{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 50px;
+    }
+    p {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        margin: 10px 0;
+    }
+    a {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 18px;
+        color: white;
+        background-color: #007bff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+    }
+    a:hover {
+        background-color: #0056b3;
+    }
+    .profile-icon-container {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+    }
+    .profile-icon-img {
+        height: 40px;
+        width: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #007bff;
+        background: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="profile-icon-container">
+        {% if user.is_authenticated %}
+            <a href="{% url 'users-profile' %}">
+                <img class="profile-icon-img"
+                     src="{{ profile.profile_picture|default:'/static/default_avatar.png' }}"
+                     alt="Profile Picture"
+                     style="height:100px; width:100px;">
+            </a>
+        {% else %}
+            <a href="{% url 'account_login' %}">Login</a>
+        {% endif %}
+    </div>
+
+    <p>Welcome to the Video Game Lending Website</p>
+    <ul>
+        <li><a href="{% url 'librarian' %}">Librarian Dashboard</a></li>
+        <li><a href="{% url 'catalog:patron_dashboard' %}">Patron Dashboard</a></li>
+        <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+        <li><a href="{% url 'account_logout' %}">Logout</a></li>
+    </ul>
+{% endblock %}

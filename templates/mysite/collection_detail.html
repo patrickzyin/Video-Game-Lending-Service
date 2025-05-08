@@ -1,0 +1,134 @@
+{% extends "base_generic.html" %}
+{% load socialaccount %}
+
+{% block title %}Collection Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    h1, h2, h3 {
+        color: #333;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        width: 80%;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .game-list {
+        list-style: none;
+        padding: 0;
+    }
+    .game-item {
+        background: #f9f9f9;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 16px;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 5px;
+        margin: 5px;
+        transition: background 0.3s ease;
+    }
+    .edit-btn {
+        background-color: #007bff;
+    }
+    .edit-btn:hover {
+        background-color: #0056b3;
+    }
+    .delete-btn {
+        background-color: #dc3545;
+    }
+    .delete-btn:hover {
+        background-color: #c82333;
+    }
+    .back-btn {
+        background-color: #6c757d;
+    }
+    .back-btn:hover {
+        background-color: #5a6268;
+    }
+    .login-btn {
+        background-color: #28a745;
+    }
+    .login-btn:hover {
+        background-color: #218838;
+    }
+    .collection-meta {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ collection.name }}</h1>
+    
+    <div class="collection-meta">
+        <p><strong>Created by:</strong> {% if collection.creator %}{{ collection.creator.username }}{% else %}Librarian{% endif %}</p>
+        <p><strong>Visibility:</strong> {% if collection.is_public %}Public{% else %}Private{% endif %}</p>
+    </div>
+    
+    <div class="collection-description">
+        <h3>Description</h3>
+        <p>{{ collection.description }}</p>
+    </div>
+    
+    <div class="collection-games">
+        <h3>Games in this Collection</h3>
+        <ul class="game-list">
+            {% for game in collection.games.all %}
+                <li class="game-item">
+                    <strong>{{ game.title }}</strong> - {{ game.platform }} - {{ game.genre }}
+                    {% if game.available %}
+                        <span style="color: green;">(Available)</span>
+                        
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'catalog:borrow_game' game.id %}" class="btn edit-btn">Request to Borrow</a>
+                        {% else %}
+                            <a href="{% provider_login_url 'google' process='login' %}" class="btn login-btn">Login to Borrow</a>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: red;">(Not Available)</span>
+                    {% endif %}
+                    
+                    <a href="{% url 'catalog:game_detail' game.id %}" class="btn back-btn">View Details</a>
+                </li>
+            {% empty %}
+                <li>No games in this collection.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    {% if can_edit %}
+    <div class="collection-actions">
+        <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn edit-btn">Edit Collection</a>
+        <a href="{% url 'catalog:delete_collection' collection.id %}" class="btn delete-btn">Delete Collection</a>
+    </div>
+    {% endif %}
+    
+    <div class="navigation">
+        {% if user.is_authenticated %}
+            <a href="{% url 'catalog:patron_dashboard' %}" class="btn back-btn">Back to Dashboard</a>
+        {% else %}
+            <a href="/" class="btn back-btn">Back to Home</a>
+            <a href="{% provider_login_url 'google' process='login' %}" class="btn login-btn">Sign In</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

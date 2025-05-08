@@ -1,0 +1,260 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Librarian Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    h2 {
+        color: #333;
+    }
+    p {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        background: white;
+        margin: 10px auto;
+        padding: 15px;
+        width: 70%;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 16px;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+        margin: 5px;
+    }
+    .add-btn { background-color: #007bff; }
+    .add-btn:hover { background-color: #0056b3; }
+    .logout-btn { background-color: #dc3545; }
+    .logout-btn:hover { background-color: #c82333; }
+    .edit-btn { background-color: #ffc107; color: #333; }
+    .edit-btn:hover { background-color: #e0a800; }
+    .delete-btn { background-color: #dc3545; }
+    .delete-btn:hover { background-color: #c82333; }
+    .form-container {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        width: 80%;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    input, select, textarea {
+        padding: 10px;
+        margin: 10px 0;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    button {
+        background-color: #28a745;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 5px;
+    }
+    button:hover { background-color: #218838; }
+    .game-description {
+        margin: 10px 0;
+        color: #555;
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .file-upload-btn {
+        background-color: #007bff;
+        cursor: pointer;
+        padding: 10px 20px;
+        display: inline-block;
+        color: white;
+        border-radius: 5px;
+        margin-top: 5px;
+        transition: background 0.3s ease;
+    }
+    .file-upload-btn:hover {
+        background-color: #0056b3;
+    }
+
+    
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>Librarian Dashboard</h2>
+<p>Welcome, {{ user.first_name }} {{ user.username }}</p>
+
+
+<div class="form-container">
+    <h3>Search Library</h3>
+    <form method="GET" action="{% url 'catalog:search' %}">
+        <input type="text" name="q" placeholder="Search for games or collections...">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="form-container">
+    <h3>Add a New Game</h3>
+    <form method="post" action="{% url 'catalog:add_game' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="text" name="title" placeholder="Game Title" required>
+        <input type="text" name="platform" placeholder="Platform (e.g., PS5, Xbox)" required>
+        <input type="text" name="genre" placeholder="Genre (e.g., Action, RPG)" required>
+        <textarea name="description" placeholder="Game description"></textarea>
+        
+        <label for="image">Upload Game Image (optional):</label>
+        <label for="image" class="file-upload-btn">Choose File</label>
+        <input type="file" id="image" name="image" style="display: none;">
+        <span id="file-name">No file chosen</span>
+
+        <button type="submit">Add Game</button>
+    </form>
+</div>
+
+<div class="form-container">
+    <h3>Game Library</h3>
+    <ul>
+        {% for game in available_games %}
+            <li>
+                {% if game.image and game.image.name %}
+                 <img src="{{ game.image.url }}" alt="{{ game.title }}" style="max-width: 150px; height: auto; border-radius: 5px; margin-bottom: 10px;">
+                {% else %}
+                <img src="https://b01-videogame-library.s3.amazonaws.com/items/default_game_image.png" alt="{{ game.title }}" style="max-width: 150px; height: auto; border-radius: 5px; margin-bottom: 10px;">
+                {% endif %}
+                <div class="game-header">
+                    <h4>{{ game.title }} - {{ game.platform }}</h4>
+                    <span>{{ game.genre }}</span>
+                </div>
+                {% if game.description %}
+                <div class="game-description">
+                    {{ game.description|truncatewords:20 }}
+                </div>
+                {% endif %}
+                <div>
+                    <a href="{% url 'catalog:edit_game' game.id %}" class="btn edit-btn">Edit</a>
+                    <a href="{% url 'catalog:delete_game' game.id %}" class="btn delete-btn">Delete</a>
+                </div>
+            </li>
+        {% empty %}
+            <li>No games in the library.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="form-container">
+    <h3>User Management</h3>
+    <form method="post" action="{% url 'catalog:upgrade_patron' %}">
+        {% csrf_token %}
+        <select name="user" required>
+            {% if patrons.exists %}
+                {% for user in patrons %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            {% else %}
+                <option disabled value="">No patrons available</option>
+            {% endif %}
+        </select>
+        <button type="submit">Upgrade to Librarian</button>
+    </form>
+</div>
+
+<div class="form-container">
+    <h3>My Collections</h3>
+    <a href="{% url 'catalog:add_collection' %}" class="btn add-btn">Create New Collection</a>
+    <ul>
+        {% for collection in librarian_collections %}
+            <li>
+                <h4>{{ collection.name }}</h4>
+                <p>{{ collection.description }}</p>
+                <p>Games: {{ collection.games.count }}</p>
+                <a href="{% url 'catalog:collection_detail' collection.id %}" class="btn rent-btn">View</a>
+                <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn edit-btn">Edit</a>
+                <a href="{% url 'catalog:delete_collection' collection.id %}" class="btn delete-btn">Delete</a>
+            </li>
+        {% empty %}
+            <li>No collections created.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="form-container">
+    <h3>Public Collections</h3>
+    <ul>
+        {% for collection in public_collections %}
+            <li>
+                <h4>{{ collection.name }}</h4>
+                <p>{{ collection.description }}</p>
+                <p>Games: {{ collection.games.count }}</p>
+                <a href="{% url 'catalog:collection_detail' collection.id %}" class="btn rent-btn">View</a>
+            </li>
+        {% empty %}
+            <li>No public collections available.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+<div class="form-container">
+    <h3>Borrowing Requests</h3>
+    <ul>
+        {% for request in borrow_requests %}
+            <li>
+                <strong>{{ request.game.title }}</strong> - Requested by: {{ request.user.username }}
+                <div>
+                    <form method="post" action="{% url 'catalog:approve_borrow' request.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="{% url 'catalog:deny_borrow' request.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit">Deny</button>
+                    </form>
+                </div>
+            </li>
+        {% empty %}
+            <li>No pending borrowing requests.</li>
+        {% endfor %}
+        
+    </ul>
+</div>
+
+<div class="form-container">
+    <a href="{% url 'upload_item' %}" class="btn add-btn">Upload Item</a>
+    <a href="{% url 'account_logout' %}" class="btn add-btn">Logout</a>
+</div>
+
+
+
+<script>
+document.getElementById('image')?.addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name || 'No file chosen';
+    document.getElementById('file-name').textContent = fileName;
+});
+</script>
+{% endblock %}

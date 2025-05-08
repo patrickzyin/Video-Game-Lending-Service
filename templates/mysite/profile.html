@@ -1,0 +1,110 @@
+{% extends "base_generic.html" %}
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        {% if profile.profile_picture %}
+            <img class="profile-img" src="{{ profile.profile_picture.url }}" alt="Profile Picture">
+        {% else %}
+            <img class="profile-img" src="/static/default_avatar.png" alt="Default Profile Picture">
+        {% endif %}
+        
+        <div class="profile-info">
+            <h2>{{ user.get_full_name|default:user.username }}</h2>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Date Joined:</strong> {{ user.date_joined|date:"F d, Y, P" }}</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+            {% csrf_token %}
+            {{ form.profile_picture.label_tag }}
+            <div class="form-row">
+                {{ form.profile_picture }}
+                {% if profile.profile_picture %}
+                    <small style="display:block; margin-top: 4px; color: #888;">
+                        Check “Clear” and click “Upload New Picture” to remove your current photo.
+                    </small>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn submit-btn">Upload New Picture</button>
+        </form>
+
+        <a href="{% url 'home' %}" class="back-btn">Back to Home</a>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.profile-card {
+    background: white;
+    padding: 30px;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.profile-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    border: 3px solid #ccc;
+}
+
+.profile-info h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+.profile-info p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 16px;
+}
+
+.upload-form {
+    margin-top: 20px;
+}
+
+.upload-form input[type="file"] {
+    margin-bottom: 10px;
+}
+
+.submit-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    background-color: #0069d9;
+}
+
+.back-btn {
+    display: inline-block;
+    margin-top: 20px;
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-btn:hover {
+    background-color: #5a6268;
+}
+</style>
+{% endblock %}

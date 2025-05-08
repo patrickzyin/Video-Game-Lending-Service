@@ -1,0 +1,233 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Patron Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    h1, h2, h3 { color: #333; }
+    p { font-size: 18px; font-weight: bold; }
+    ul { list-style: none; padding: 0; }
+    li {
+        background: white;
+        margin: 10px auto;
+        padding: 10px;
+        width: 60%;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 16px;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+        margin: 5px;
+    }
+    .rent-btn { background-color: #28a745; }
+    .rent-btn:hover { background-color: #218838; }
+    .add-btn { background-color: #007bff; }
+    .add-btn:hover { background-color: #0056b3; }
+    .edit-btn { background-color: #ffc107; color: #333; }
+    .edit-btn:hover { background-color: #e0a800; }
+    .delete-btn { background-color: #dc3545; }
+    .delete-btn:hover { background-color: #c82333; }
+    .details-btn { background-color: #6c757d; }
+    .details-btn:hover { background-color: #5a6268; }
+    .section {
+        background: white;
+        padding: 15px;
+        margin: 20px auto;
+        width: 80%;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .game-meta {
+        display: flex;
+        gap: 15px;
+        color: #666;
+    }
+    .rating {
+        color: #ffc107;
+        font-weight: bold;
+    }
+    .star { color: #ffc107; }
+    .empty-star { color: #ddd; }
+    .game-actions { margin-top: 10px; }
+    .search-box {
+        margin: 20px auto;
+        width: 80%;
+        text-align: center;
+    }
+    .search-box input[type="text"] {
+        width: 60%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    .search-box button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Patron Dashboard</h1>
+<p>Welcome, {{ user.first_name }} {{ user.username }}</p>
+
+<div class="search-box">
+    <form method="GET" action="{% url 'catalog:search' %}">
+        <input type="text" name="q" placeholder="Search for games or collections...">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="section">
+    <h2>My Collections</h2>
+    <a href="{% url 'catalog:add_collection' %}" class="btn add-btn">Create New Collection</a>
+    <ul>
+        {% for collection in user_collections %}
+            <li>
+                <h3>{{ collection.name }}</h3>
+                <p>{{ collection.description }}</p>
+                <p>Games: {{ collection.games.count }}</p>
+                <a href="{% url 'catalog:collection_detail' collection.id %}" class="btn rent-btn">View Details</a>
+                <a href="{% url 'catalog:edit_collection' collection.id %}" class="btn edit-btn">Edit</a>
+                <a href="{% url 'catalog:delete_collection' collection.id %}" class="btn delete-btn">Delete</a>
+            </li>
+        {% empty %}
+            <li>You haven't created any collections yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Public Collections</h2>
+    <ul>
+        {% for collection in public_collections %}
+            <li>
+                <h3>{{ collection.name }}</h3>
+                <p>{{ collection.description }}</p>
+                <p>Created by: {% if collection.creator %}{{ collection.creator.username }}{% else %}Librarian{% endif %}</p>
+                <p>Games: {{ collection.games.count }}</p>
+                <a href="{% url 'catalog:collection_detail' collection.id %}" class="btn rent-btn">View Details</a>
+            </li>
+        {% empty %}
+            <li>No public collections available.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="section">
+    <h2>Available Games for Rent</h2>
+    <ul>
+        {% for game in available_games %}
+            <li>
+                {% if game.image and game.image.name %}
+                 <img src="{{ game.image.url }}" alt="{{ game.title }}" style="max-width: 150px; height: auto; border-radius: 5px; margin-bottom: 10px;">
+                {% else %}
+                <img src="https://b01-videogame-library.s3.amazonaws.com/items/default_game_image.png" alt="{{ game.title }}" style="max-width: 150px; height: auto; border-radius: 5px; margin-bottom: 10px;">
+                {% endif %}
+                <div class="game-header">
+                    <h3>{{ game.title }}</h3>
+                    <div class="rating">
+                        {% if game.cached_avg_rating %}
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= game.cached_avg_rating %}
+                                    <span class="star">★</span>
+                                {% else %}
+                                    <span class="empty-star">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                            ({{ game.cached_avg_rating|floatformat:1 }})
+                        {% else %}
+                            No ratings yet
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="game-meta">
+                    <span>{{ game.platform }}</span>
+                    <span>{{ game.genre }}</span>
+                </div>
+                <div class="game-actions">
+                    <a href="{% url 'catalog:game_detail' game.id %}" class="btn details-btn">View Details & Reviews</a>
+                    <a href="{% url 'catalog:borrow_game' game.id %}" class="btn rent-btn">Request to Borrow</a>
+                </div>
+            </li>
+        {% empty %}
+            <li>No games available at the moment.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="section">
+    <h2>My Borrowed Games</h2>
+    <ul>
+        {% for borrowed_game in borrowed_games %}
+            <li>
+                {{ borrowed_game.game.title }} — {{ borrowed_game.game.platform }} ({{ borrowed_game.game.genre }})
+                <a href="{% url 'catalog:return_game' borrowed_game.id %}" class="btn delete-btn">Return Game</a>
+            </li>
+        {% empty %}
+            <li>You haven't borrowed any games.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+<div class="section">
+    <h2>My Borrow Requests</h2>
+    <ul>
+        {% if borrow_requests %}
+            {% for request in borrow_requests %}
+                <li>
+                    {{ request.game.title }} — 
+                    {% if request.approved %}
+                        <strong style="color: green;">Approved</strong>
+                    {% elif request.denied %}
+                        <strong style="color: red;">Denied</strong>
+                    {% else %}
+                        <strong style="color: orange;">Pending</strong>
+                    {% endif %}
+
+                    {% if request.approved or request.denied %}
+                        <form method="post" action="{% url 'catalog:delete_borrow_request' request.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none; color:#dc3545; font-weight:bold; cursor:pointer;">❌</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>You have no borrow requests.</li>
+        {% endif %}
+    </ul>
+</div>
+
+
+
+
+<div class="section">
+    <a href="{% url 'account_logout' %}" class="btn add-btn">Logout</a>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Game Library{% endblock %}</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        main {
+            flex: 1;
+        }
+        .footer-disclaimer {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+    {% block extra_css %}
+    <style>
+        .file-upload-btn {
+            background-color: #007bff;
+            cursor: pointer;
+            padding: 10px 20px;
+            display: inline-block;
+            color: white;
+            border-radius: 5px;
+            margin-right: 10px;
+            transition: background 0.3s ease;
+            font-size: 16px;
+            border: none;
+        }
+
+        .file-upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .file-upload-wrapper {
+            margin-top: 10px;
+        }
+
+        #file-name {
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+    {% endblock %}
+</head>
+<body>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <div class="footer-disclaimer">
+        <p><strong>Disclaimer:</strong> This is a class project for CS 3240. This system is not monitored, and no real information should be submitted.</p>
+    </div>
+</body>
+</html>

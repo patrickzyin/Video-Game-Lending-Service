@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Other Page</title>
+</head>
+<body>
+    <p> {{request.user}} does not have access, access will be granted shortly</p>
+    <ul>
+        <li><a href="{% url 'account_logout' %}">Logout</a></li>
+    </ul>
+</body>
+</html>

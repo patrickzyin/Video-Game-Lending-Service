@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Return Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #28a745;
+        }
+        p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .btn-container {
+            margin-top: 20px;
+        }
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 16px;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            margin: 5px;
+        }
+        .borrowed-btn {
+            background-color: #007bff;
+        }
+        .borrowed-btn:hover {
+            background-color: #0056b3;
+        }
+        .game-list-btn {
+            background-color: #17a2b8;
+        }
+        .game-list-btn:hover {
+            background-color: #117a8b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Successfully returned {{ game.title }}!</h1>
+    <p>The game is now available for borrowing again.</p>
+
+    <div class="btn-container">
+        <a href="{% url 'catalog:borrowed_games' %}" class="btn borrowed-btn">View Borrowed Games</a>
+        <a href="{% url 'catalog:game_list' %}" class="btn game-list-btn">Back to Game List</a>
+    </div>
+</body>
+</html>

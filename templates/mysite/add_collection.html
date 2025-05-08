@@ -1,0 +1,167 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Create Collection{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 {
+        color: #333;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        width: 80%;
+        max-width: 800px;
+        border-radius: 5px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    form {
+        text-align: left;
+    }
+    label {
+        display: block;
+        margin: 15px 0 5px;
+        font-weight: bold;
+    }
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    textarea {
+        height: 100px;
+        resize: vertical;
+    }
+    .game-options {
+        margin: 20px 0;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .game-option {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+    .game-option input {
+        margin-right: 10px;
+    }
+    .private-option {
+        margin: 20px 0;
+    }
+    .btn {
+        display: inline-block;
+        text-decoration: none;
+        font-size: 16px;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin: 5px;
+        transition: background 0.3s ease;
+    }
+    .submit-btn {
+        background-color: #28a745;
+    }
+    .submit-btn:hover {
+        background-color: #218838;
+    }
+    .cancel-btn {
+        background-color: #dc3545;
+    }
+    .cancel-btn:hover {
+        background-color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Create New Collection</h1>
+    
+    <form method="post" action="{% url 'catalog:add_collection' %}">
+        {% csrf_token %}
+        
+        <label for="name">Collection Name:</label>
+        <input type="text" id="name" name="name" required>
+        
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+        
+        <label>Select Games for Collection:</label>
+        <div class="game-options">
+            {% for game in games %}
+                <div class="game-option">
+                    <input type="checkbox" id="game_{{ game.id }}" name="games" value="{{ game.id }}" 
+                        data-in-private="{{ game.in_private|yesno:'1,0' }}" data-in-any="{{ game.in_any|yesno:'1,0' }}"
+                        {% if not is_librarian and game.in_private %}disabled{% endif %}>
+                    <label for="game_{{ game.id }}">
+                        {{ game.title }} – {{ game.platform }} – {{ game.genre }}
+                        {% if game.in_private %}
+                            <small>(locked in private)</small>
+                        {% endif %}
+                        {% if is_librarian and game.in_any %}
+                            <small>(already in a collection)</small>
+                        {% endif %}
+                    </label>
+                </div>
+            {% empty %}
+                <p>No games available to add to collection.</p>
+            {% endfor %}
+        </div>
+        
+        {% if is_librarian %}
+        <div class="private-option">
+            <input type="checkbox" id="is_private" name="is_private">
+            <label for="is_private">Make this collection private</label>
+        </div>
+        {% endif %}
+        
+        <button type="submit" class="btn submit-btn">Create Collection</button>
+        
+        {% if is_librarian %}
+            <a href="{% url 'catalog:librarian_dashboard' %}" class="btn cancel-btn">Cancel</a>
+        {% else %}
+            <a href="{% url 'catalog:patron_dashboard' %}" class="btn cancel-btn">Cancel</a>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const privToggle = document.getElementById('is_private');
+        const checkboxes = document.querySelectorAll('.game-option input[type=checkbox]');
+        
+        function refreshDisabled() {
+            const makingPrivate = privToggle && privToggle.checked;
+            checkboxes.forEach(cb => {
+                const inPrivate = cb.dataset.inPrivate === '1';
+                const inAny = cb.dataset.inAny === '1';
+                let shouldDisable = makingPrivate ? inAny : inPrivate;
+                cb.disabled = shouldDisable;
+                if (shouldDisable) cb.checked = false;
+            });
+        }
+
+        if (privToggle) {
+            privToggle.addEventListener('change', refreshDisabled);
+            refreshDisabled();
+        }
+    });
+</script>
+{% endblock %}

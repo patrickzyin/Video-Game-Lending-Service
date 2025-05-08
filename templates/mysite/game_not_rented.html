@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Not Rented</title>
+</head>
+<body>
+    <h1>{{ game.title }} has not been borrowed by you.</h1>
+    <p>You cannot return a game that you have not borrowed.</p>
+    <a href="{% url 'catalog:borrowed_games' %}">Back to Borrowed Games</a>
+</body>
+</html>
